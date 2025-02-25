@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import animate from "tailwindcss-animate";
 
 export default {
     darkMode: ["class"],
@@ -9,7 +10,23 @@ export default {
   ],
   theme: {
   	extend: {
+      fontFamily: {
+        handwriting: ['var(--font-handwriting)'],
+      },
   		colors: {
+        "dream-orange": {
+          "50": "var(--color-red-orange-50)",
+          "100": "var(--color-red-orange-100)",
+          "200": "var(--color-red-orange-200)",
+          "300": "var(--color-red-orange-300)",
+          "400": "var(--color-red-orange-400)",
+          "500": "var(--color-red-orange-500)",
+          "600": "var(--color-red-orange-600)",
+          "700": "var(--color-red-orange-700)",
+          "800": "var(--color-red-orange-800)",
+          "900": "var(--color-red-orange-900)",
+          "950": "var(--color-red-orange-950)",
+        },
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {
@@ -58,5 +75,5 @@ export default {
   		}
   	}
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [animate],
 } satisfies Config;
