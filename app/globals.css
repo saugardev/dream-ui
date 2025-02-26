@@ -125,7 +125,6 @@
     @apply text-[hsl(var(--negative))] flex items-center;
   }
 
-  /* Styles for dashboard elements */
   .dashboard-card {
     @apply bg-card border border-border rounded-xl p-4 shadow-md;
   }
@@ -140,5 +139,16 @@
 
   .dashboard-nav-item.active {
     @apply text-foreground bg-secondary;
+  }
+}
+
+
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
   }
 }
