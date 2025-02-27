@@ -90,7 +90,7 @@
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
@@ -142,13 +142,26 @@
   .dashboard-nav-item.active {
     @apply text-foreground bg-secondary;
   }
-}
 
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
+  .subtle-glow {
+    text-shadow: 
+      0 0 10px rgba(var(--primary-rgb), 0.6),
+      0 0 20px rgba(var(--primary-rgb), 0.3);
+    transition: text-shadow 0.3s ease;
   }
-  body {
-    @apply bg-background text-foreground;
+  
+  .subtle-glow:hover {
+    text-shadow: 
+      0 0 15px rgba(var(--primary-rgb), 0.8),
+      0 0 25px rgba(var(--primary-rgb), 0.5);
+  }
+  
+  .info-button {
+    transition: all 0.3s ease;
+  }
+  
+  .info-button:hover {
+    filter: drop-shadow(0 0 8px rgba(var(--primary-rgb), 0.7)) 
+           drop-shadow(0 0 16px rgba(var(--primary-rgb), 0.4));
   }
 }

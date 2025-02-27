@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Button } from "./ui/button";
-import { Settings, SlidersHorizontal } from "lucide-react";
+import { Settings } from "lucide-react";
 import Image from "next/image";
 
 export default function Navbar() {
@@ -14,10 +14,7 @@ export default function Navbar() {
       </Link>
       
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="text-muted-foreground">
-          <SlidersHorizontal className="w-5 h-5" />
-        </Button>
-        <Button variant="ghost" size="icon" className="text-muted-foreground">
+        <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary hover:text-white info-button">
           <Settings className="w-5 h-5" />
         </Button>
         <Link href="/dashboard">
