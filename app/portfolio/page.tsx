@@ -22,10 +22,10 @@ export default function PortfolioPage() {
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-2">
               <Briefcase className="text-primary h-5 w-5" />
-              <h3 className="font-bold text-lg">Portfolio Overview</h3>
+              <h3 className="font-semibold text-lg">Portfolio Overview</h3>
             </div>
             <div className="text-right">
-              <p className="text-2xl font-bold">$214,356.78</p>
+              <p className="text-2xl font-semibold">$214,356.78</p>
               <p className="positive-change text-sm">
                 <ArrowUp className="h-4 w-4 mr-1" />
                 <span>8.74% ($17,345.21)</span>
@@ -51,7 +51,7 @@ export default function PortfolioPage() {
         <div className="dashboard-card">
           <div className="flex items-center gap-2 mb-4">
             <PieChart className="text-primary h-5 w-5" />
-            <h3 className="font-bold text-lg">Asset Allocation</h3>
+            <h3 className="font-semibold text-lg">Asset Allocation</h3>
           </div>
           <div className="space-y-4">
             {assets.map((asset, index) => (
@@ -80,7 +80,7 @@ export default function PortfolioPage() {
       <div className="dashboard-card mt-6">
         <div className="flex items-center gap-2 mb-6">
           <TrendingUp className="text-primary h-5 w-5" />
-          <h3 className="font-bold text-lg">Portfolio Assets</h3>
+          <h3 className="font-semibold text-lg">Portfolio Assets</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">

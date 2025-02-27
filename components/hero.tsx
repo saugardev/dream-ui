@@ -5,14 +5,14 @@ import { Link as LinkIcon } from "lucide-react";
 export default function Hero() {
   return (
     <div className="flex flex-col items-center text-center py-20">
-      <div className="flex items-center gap-2 px-4 py-2 bg-secondary rounded-full">
-        <span className="text-sm font-medium text-primary uppercase">DYNAMIC DASHBOARD</span>
+    <div className="flex items-center gap-2 px-4 py-2 text-xs rounded-full text-primary">
+        <span className="font-medium uppercase">LIVE ON TESTNET</span>
         <Link href="#" target="_blank">
-          <LinkIcon className="w-4 h-4 text-primary" />
+          <LinkIcon className="w-4 h-4" />
         </Link>
       </div>
 
-      <h1 className="text-6xl font-bold mb-4 mt-4">
+      <h1 className="text-6xl font-semibold mb-4 mt-4">
         Unlock Revolutionary <br />
         <span className="text-primary">Trading Technology</span>
       </h1>

@@ -104,7 +104,7 @@ export default function SketchyChart({
     <div className={cn("relative border-2 border-black p-4 rounded-lg", className)}>
       {value && (
         <div className="absolute top-4 left-4 z-10">
-          <div className="text-3xl font-bold font-handwriting">{value}</div>
+          <div className="text-3xl font-semibold font-handwriting">{value}</div>
           {percentage && (
             <div className="text-green-600 font-handwriting">+{percentage}</div>
           )}

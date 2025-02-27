@@ -86,7 +86,7 @@ export default function VaultsPage() {
       </div>
 
       <div className="mb-6">
-        <h3 className="text-lg font-bold mb-4">Available Vaults</h3>
+        <h3 className="text-lg font-semibold mb-4">Available Vaults</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {vaultProducts.map((vault, index) => (
             <div className="dashboard-card" key={index}>
@@ -95,12 +95,12 @@ export default function VaultsPage() {
                   {vault.icon}
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-bold text-lg mb-1">{vault.name}</h3>
+                  <h3 className="font-semibold text-lg mb-1">{vault.name}</h3>
                   <p className="text-muted-foreground text-sm mb-3">{vault.description}</p>
                   <div className="grid grid-cols-2 gap-y-2">
                     <div>
                       <p className="text-xs text-muted-foreground">APY</p>
-                      <p className="font-bold text-primary">{vault.apy}</p>
+                      <p className="font-semibold text-primary">{vault.apy}</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">RISK</p>
@@ -132,7 +132,7 @@ export default function VaultsPage() {
       </div>
 
       <div className="dashboard-card">
-        <h3 className="text-lg font-bold mb-4">Your Active Vaults</h3>
+        <h3 className="text-lg font-semibold mb-4">Your Active Vaults</h3>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>

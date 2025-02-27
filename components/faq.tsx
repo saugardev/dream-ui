@@ -31,7 +31,7 @@ export function FAQ() {
     <section className="py-20">
       <div className="container">
         <div className="max-w-2xl mx-auto">
-          <h2 className="text-3xl font-bold mb-10">Frequently asked questions</h2>
+          <h2 className="text-3xl font-semibold mb-10">Frequently asked questions</h2>
           <Accordion type="single" collapsible className="w-full">
             {faqs.map((faq, index) => (
               <AccordionItem key={index} value={`item-${index}`}>

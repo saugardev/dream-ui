@@ -44,7 +44,7 @@ const ProtocolMetricsChart = () => {
                   left: `${(hoveredIndex / data.length) * 100 + 5}%`,
                 }}
               >
-                <div className="grid grid-cols-2 gap-x-3 gap-y-1 mt-1">
+                <div className="grid grid-cols-2 gap-x-3 gap-y-1 mt-1 pointer-events-none">
                   <span className="text-muted-foreground">High:</span>
                   <span className="font-medium">{data[hoveredIndex].max}</span>
                   <span className="text-muted-foreground">Low:</span>
@@ -74,17 +74,14 @@ const ProtocolMetricsChart = () => {
                   >
                     <div className="absolute h-full w-px border-l border-border border-dotted pointer-events-none opacity-50"></div>
                     
-                    {isHovered && (
-                      <div className="absolute inset-0 bg-secondary/20 z-10"></div>
-                    )}
-                    
                     <div
-                      className={`absolute w-4/5 rounded-sm left-1/2 transform -translate-x-1/2 transition-all duration-150 ${isHovered ? 'w-11/12' : 'w-4/5'}`}
+                      className={`absolute w-4/5 rounded-sm left-1/2 transform -translate-x-1/2 transition-all duration-300 bg-primary cursor-pointer`}
                       style={{
                         top: `${maxPosPercent}%`,
                         height: `${Math.max(barHeight, 2)}%`,
-                        opacity: isHovered ? 1 : 0.8,
-                        backgroundColor: 'hsl(var(--chart-1))'
+                        boxShadow: !isHovered 
+                          ? '0 0 15px 2px rgba(254, 70, 49, 0.6), 0 0 5px 1px rgba(254, 70, 49, 0.4) inset' 
+                          : '0 0 8px 1px rgba(254, 70, 49, 0.4'
                       }}
                     ></div>
                   </div>

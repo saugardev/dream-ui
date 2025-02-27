@@ -36,7 +36,7 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
                 className={cn(
                   "px-4 py-2 rounded-md text-sm font-medium",
                   pathname === link.href
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-primary text-primary-foreground shadow-[0_0_15px_2px_rgba(var(--primary-rgb),0.6),0_0_5px_1px_rgba(var(--primary-rgb),0.4)_inset]"
                     : "bg-secondary hover:bg-secondary/80"
                 )}
               >

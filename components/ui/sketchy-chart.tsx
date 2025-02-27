@@ -40,7 +40,7 @@ export function SketchyChart({
     <div className={cn("relative", className)}>
       <div className="flex items-end justify-between mb-2">
         <div>
-          <h3 className="text-5xl font-handwriting font-bold">{value}</h3>
+          <h3 className="text-5xl font-handwriting font-semibold">{value}</h3>
           <div className="flex items-center font-handwriting text-xl">
             <ArrowUpRight className="h-4 w-4 mr-1" />
             {percentage}
@@ -105,11 +105,11 @@ export function SketchyChart({
       </div>
       
       <div className="flex justify-between mt-2">
-        <div className="font-handwriting text-lg font-bold">
+        <div className="font-handwriting text-lg font-semibold">
           <div>Current PNL</div>
           <div className="text-2xl">$120.69</div>
         </div>
-        <div className="font-handwriting text-lg font-bold">
+        <div className="font-handwriting text-lg font-semibold">
           <div>Total Trades</div>
           <div className="text-2xl">$12.69K</div>
         </div>

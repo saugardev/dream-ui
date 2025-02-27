@@ -27,9 +27,9 @@ export function SketchyCard({
     >
       {title && (
         <div className="flex items-center mb-3">
-          <h3 className="text-xl font-handwriting font-bold">{title}</h3>
+          <h3 className="text-xl font-handwriting font-semibold">{title}</h3>
           {showInfoIcon && (
-            <div className="ml-2 inline-flex items-center justify-center w-5 h-5 border-2 border-black rounded-full text-xs font-bold">
+            <div className="ml-2 inline-flex items-center justify-center w-5 h-5 border-2 border-black rounded-full text-xs font-semibold">
               i
             </div>
           )}

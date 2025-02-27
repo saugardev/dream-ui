@@ -5,14 +5,14 @@ export function Features() {
   return (
     <section className="container py-24">
       <div className="text-center mb-16">
-        <h2 className="text-3xl font-bold mb-4">Features</h2>
+        <h2 className="text-3xl font-semibold mb-4">Features</h2>
         <p className="text-muted-foreground">
           Discover all the main things that we do nicely
         </p>
       </div>
 
       <div className="grid grid-cols-3 gap-8 items-center">
-        <Card className="p-6 hover:shadow-lg transition-shadow">
+        <Card className="p-4 hover:shadow-lg transition-shadow">
           <h3 className="text-xl font-semibold mb-4">Maker</h3>
           <ul className="space-y-3 text-sm text-muted-foreground">
             <li>Lorem ipsum dolor sit amet</li>
@@ -33,7 +33,7 @@ export function Features() {
           </ul>
         </Card>
 
-        <Card className="p-6 hover:shadow-lg transition-shadow">
+        <Card className="p-4 hover:shadow-lg transition-shadow">
           <h3 className="text-xl font-semibold mb-4">Reflexer</h3>
           <ul className="space-y-3 text-sm text-muted-foreground">
             <li>Lorem ipsum dolor sit amet</li>

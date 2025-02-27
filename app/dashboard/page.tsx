@@ -9,24 +9,24 @@ import Link from "next/link";
 export default function DashboardPage() {
   return (
     <DashboardLayout title="Welcome to Dream">
-      <Card className="p-6 mb-6">
-        <div className="flex justify-between items-center mb-4">
+      <Card className="p-4 mb-4">
+        <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold">Portfolio</h2>
+            <p className="stats-label">PORTFOLIO</p>
             <button className="text-muted-foreground hover:text-primary">
               <Info className="h-4 w-4" />
             </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mt-2">
           <div className="lg:col-span-4">
-            <div className="mb-6">
-              <div className="flex items-baseline gap-3">
-                <h3 className="text-4xl font-bold">$3,420.69</h3>
-                <div className="flex items-center text-green-500">
+            <div className="mb-4">
+              <div className="flex gap-3">
+                <h3 className="text-4xl font-semibold">$3,420.69</h3>
+                <div className="flex text-green-500 mt-2">
                   <ArrowUp className="h-4 w-4" />
-                  <span>13.21%</span>
+                  <span className="text-xs">13.21%</span>
                 </div>
               </div>
             </div>
@@ -36,24 +36,31 @@ export default function DashboardPage() {
           </div>
 
           <div className="mt-20 lg:col-span-1">
-            <div>
-              <div className="flex flex-col justify-left items-start mb-4">
-                <h3 className="text-muted-foreground">Current PNL</h3>
-                <span className="text-3xl font-bold">$120.69</span>
+            <div className="h-full flex flex-col">
+              <div>
+                <div className="flex flex-col justify-left items-start mb-4">
+                  <h3 className="text-muted-foreground text-xs uppercase">Current PNL</h3>
+                  <span className="text-3xl font-semibold">$120.69</span>
+                </div>
+                <div className="flex flex-col justify-left items-start">
+                  <h3 className="text-muted-foreground text-xs uppercase">Total Trades</h3>
+                  <span className="text-3xl font-semibold">$12.69K</span>
+                </div>
               </div>
-              <div className="flex flex-col justify-left items-start">
-                <h3 className="text-muted-foreground">Total Trades</h3>
-                <span className="text-3xl font-bold">$12.69K</span>
+              <div className="mt-auto text-right">
+                <Link href="/vaults" className="text-sm text-primary hover:underline">
+                  See more →
+                </Link>
               </div>
             </div>
-          </div>
+          </div>  
         </div>
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="p-6">
+        <Card className="p-4">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-bold">Vaults</h3>
+            <h3 className="text-xl font-semibold">Vaults</h3>
             <Link href="/vaults" className="text-sm text-primary hover:underline">
               See more →
             </Link>
@@ -76,9 +83,9 @@ export default function DashboardPage() {
           ))}
         </Card>
 
-        <Card className="p-6">
+        <Card className="p-4">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-bold">Activity</h3>
+            <h3 className="text-xl font-semibold">Activity</h3>
             <Link href="/activity" className="text-sm text-primary hover:underline">
               See more →
             </Link>

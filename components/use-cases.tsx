@@ -53,7 +53,7 @@ export function UseCases() {
   return (
     <section className="py-20">
       <div className="container">
-        <h2 className="text-3xl font-bold">Use Cases</h2>
+        <h2 className="text-3xl font-semibold">Use Cases</h2>
         <Swiper
           modules={[Navigation, Autoplay]}
           navigation={{
@@ -76,7 +76,7 @@ export function UseCases() {
         >
           {useCases.map((useCase, index) => (
             <SwiperSlide key={index}>
-              <div className="rounded-3xl border bg-card p-6 h-full flex flex-col">
+              <div className="rounded-3xl border bg-card p-4 h-full flex flex-col">
                 <div className="relative aspect-square mb-6 rounded-2xl overflow-hidden">
                   <Image
                     src={useCase.image}

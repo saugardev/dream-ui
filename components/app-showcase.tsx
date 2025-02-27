@@ -4,7 +4,7 @@ export function AppShowcase() {
   return (
     <section className="container py-24">
       <div className="text-center mb-16">
-        <h2 className="text-3xl font-bold mb-4 max-w-2xl mx-auto">
+        <h2 className="text-3xl font-semibold mb-4 max-w-2xl mx-auto">
           Our all-in-one application
           is build for everybody
         </h2>
@@ -16,7 +16,7 @@ export function AppShowcase() {
 
       <div className="grid md:grid-cols-2 gap-8">
         <Card className="overflow-hidden">
-          <div className="p-6">
+          <div className="p-4">
             <h3 className="text-xl font-semibold mb-2">Simplified Dashboard</h3>
             <p className="text-muted-foreground">Track the TVL, Price and Collateral Ratio</p>
           </div>
@@ -30,7 +30,7 @@ export function AppShowcase() {
         </Card>
 
         <Card className="overflow-hidden">
-          <div className="p-6">
+          <div className="p-4">
             <h3 className="text-xl font-semibold mb-2">Portfolio Manager</h3>
             <p className="text-muted-foreground">Track your portfolio</p>
           </div>
