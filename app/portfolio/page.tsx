@@ -1,7 +1,7 @@
 "use client"
 
 import DashboardLayout from "@/components/dashboard-layout";
-import { ArrowUp, ArrowDown, Briefcase, PieChart, TrendingUp } from "lucide-react";
+import { ArrowUp, ArrowDown, Briefcase, PieChart, TrendingUp, Lock, Shield } from "lucide-react";
 import dynamic from "next/dynamic";
 
 const SketchyChart = dynamic(() => import("@/components/sketchy-chart"), { ssr: false });
@@ -17,19 +17,54 @@ export default function PortfolioPage() {
 
   return (
     <DashboardLayout title="Portfolio Management">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div className="dashboard-card card-gradient">
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <p className="stats-label">TOTAL COLLATERAL</p>
+              <h3 className="text-4xl font-semibold">$45,672.39</h3>
+            </div>
+            <div className="h-10 w-10 bg-primary/10 flex items-center justify-center rounded-full">
+              <Lock className="text-primary h-5 w-5" />
+            </div>
+          </div>
+          <div className="positive-change text-xs flex items-center mt-2">
+            <ArrowUp className="h-4 w-4 mr-1" />
+            <span>6.24%</span>
+            <span className="text-muted-foreground ml-1">increase this month</span>
+          </div>
+        </div>
+
+        <div className="dashboard-card card-gradient">
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <p className="stats-label">TOTAL DEBT</p>
+              <h3 className="text-4xl font-semibold">$28,215.64</h3>
+            </div>
+            <div className="h-10 w-10 bg-primary/10 flex items-center justify-center rounded-full">
+              <Shield className="text-primary h-5 w-5" />
+            </div>
+          </div>
+          <div className="text-xs flex items-center mt-2">
+            <span className="text-muted-foreground">Current collateral ratio: </span>
+            <span className="font-medium ml-1">162%</span>
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="dashboard-card lg:col-span-2">
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-2">
               <Briefcase className="text-primary h-5 w-5" />
-              <h3 className="font-semibold text-lg">Portfolio Overview</h3>
+              <p className="stats-label">PORTFOLIO OVERVIEW</p>
             </div>
             <div className="text-right">
-              <p className="text-2xl font-semibold">$214,356.78</p>
-              <p className="positive-change text-sm">
+              <p className="text-4xl font-semibold">$214,356.78</p>
+              <div className="positive-change text-xs flex items-center">
                 <ArrowUp className="h-4 w-4 mr-1" />
                 <span>8.74% ($17,345.21)</span>
-              </p>
+              </div>
             </div>
           </div>
           <div className="h-80">
@@ -51,7 +86,7 @@ export default function PortfolioPage() {
         <div className="dashboard-card">
           <div className="flex items-center gap-2 mb-4">
             <PieChart className="text-primary h-5 w-5" />
-            <h3 className="font-semibold text-lg">Asset Allocation</h3>
+            <p className="stats-label">ASSET ALLOCATION</p>
           </div>
           <div className="space-y-4">
             {assets.map((asset, index) => (
@@ -80,7 +115,7 @@ export default function PortfolioPage() {
       <div className="dashboard-card mt-6">
         <div className="flex items-center gap-2 mb-6">
           <TrendingUp className="text-primary h-5 w-5" />
-          <h3 className="font-semibold text-lg">Portfolio Assets</h3>
+          <p className="stats-label">PORTFOLIO ASSETS</p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">

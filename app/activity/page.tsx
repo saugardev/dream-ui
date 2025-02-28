@@ -108,6 +108,7 @@ export default function ActivityPage() {
       </div>
 
       <div className="dashboard-card">
+        <p className="stats-label mb-4">TRANSACTION HISTORY</p>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>

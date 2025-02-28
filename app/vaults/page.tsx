@@ -1,7 +1,7 @@
 "use client"
 
 import DashboardLayout from "@/components/dashboard-layout";
-import { Lock, ArrowUp, Clock, Shield } from "lucide-react";
+import { Lock, Shield, Info } from "lucide-react";
 
 export default function VaultsPage() {
   const vaultProducts = [
@@ -24,69 +24,15 @@ export default function VaultsPage() {
       totalLocked: "$45.8M",
       icon: <Lock className="h-10 w-10 text-primary" />,
       description: "Earn yield while holding Bitcoin for the long term"
-    },
-    {
-      name: "ETH 2.0 Staking",
-      apy: "5.8%",
-      risk: "Medium",
-      lockPeriod: "180 days",
-      minDeposit: "$1500",
-      totalLocked: "$67.2M",
-      icon: <Clock className="h-10 w-10 text-primary" />,
-      description: "Participate in ETH 2.0 staking with automated rewards"
-    },
-    {
-      name: "DeFi Yield Aggregator",
-      apy: "12.4%",
-      risk: "High",
-      lockPeriod: "45 days",
-      minDeposit: "$2000",
-      totalLocked: "$23.9M",
-      icon: <ArrowUp className="h-10 w-10 text-primary" />,
-      description: "Algorithmically optimized yield farming across DeFi protocols"
     }
   ];
 
   return (
     <DashboardLayout title="Yield Vaults">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div className="dashboard-card card-gradient">
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <p className="stats-label">TOTAL STAKED</p>
-              <h3 className="stats-value">$45,672.39</h3>
-            </div>
-            <div className="h-10 w-10 bg-primary/10 flex items-center justify-center rounded-full">
-              <Lock className="text-primary h-5 w-5" />
-            </div>
-          </div>
-          <div className="positive-change text-sm mt-2">
-            <ArrowUp className="h-4 w-4 mr-1" />
-            <span>6.24%</span>
-            <span className="text-muted-foreground ml-1">return this month</span>
-          </div>
-        </div>
 
-        <div className="dashboard-card card-gradient">
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <p className="stats-label">EARNED REWARDS</p>
-              <h3 className="stats-value">$3,854.28</h3>
-            </div>
-            <div className="h-10 w-10 bg-primary/10 flex items-center justify-center rounded-full">
-              <ArrowUp className="text-primary h-5 w-5" />
-            </div>
-          </div>
-          <div className="positive-change text-sm mt-2">
-            <ArrowUp className="h-4 w-4 mr-1" />
-            <span>2.14%</span>
-            <span className="text-muted-foreground ml-1">vs last week</span>
-          </div>
-        </div>
-      </div>
 
       <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-4">Available Vaults</h3>
+        <p className="stats-label mb-4">AVAILABLE CDP TYPES</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {vaultProducts.map((vault, index) => (
             <div className="dashboard-card" key={index}>
@@ -96,32 +42,32 @@ export default function VaultsPage() {
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-lg mb-1">{vault.name}</h3>
-                  <p className="text-muted-foreground text-sm mb-3">{vault.description}</p>
+                  <p className="text-muted-foreground text-sm mb-3">Create a collateralized debt position with {vault.name}</p>
                   <div className="grid grid-cols-2 gap-y-2">
                     <div>
-                      <p className="text-xs text-muted-foreground">APY</p>
+                      <p className="text-xs text-muted-foreground">STABILITY FEE</p>
                       <p className="font-semibold text-primary">{vault.apy}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">RISK</p>
-                      <p className="font-medium">{vault.risk}</p>
+                      <p className="text-xs text-muted-foreground">LIQUIDATION FEE</p>
+                      <p className="font-medium">13%</p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">LOCK PERIOD</p>
-                      <p className="font-medium">{vault.lockPeriod}</p>
+                      <p className="text-xs text-muted-foreground">MIN COLLATERAL RATIO</p>
+                      <p className="font-medium">150%</p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">MIN DEPOSIT</p>
+                      <p className="text-xs text-muted-foreground">MAX DEBT</p>
                       <p className="font-medium">{vault.minDeposit}</p>
                     </div>
                   </div>
                   <div className="mt-4 flex justify-between items-center">
                     <div>
-                      <p className="text-xs text-muted-foreground">TOTAL LOCKED</p>
+                      <p className="text-xs text-muted-foreground">TOTAL DEBT ISSUED</p>
                       <p className="font-medium">{vault.totalLocked}</p>
                     </div>
                     <button className="px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-md">
-                      Deposit
+                      Create CDP
                     </button>
                   </div>
                 </div>
@@ -132,16 +78,23 @@ export default function VaultsPage() {
       </div>
 
       <div className="dashboard-card">
-        <h3 className="text-lg font-semibold mb-4">Your Active Vaults</h3>
+        <p className="stats-label mb-4">YOUR ACTIVE CDPs</p>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-border">
-                <th className="text-left py-3 font-medium text-muted-foreground">Vault</th>
-                <th className="text-right py-3 font-medium text-muted-foreground">Staked</th>
-                <th className="text-right py-3 font-medium text-muted-foreground">APY</th>
-                <th className="text-right py-3 font-medium text-muted-foreground">Earned</th>
-                <th className="text-right py-3 font-medium text-muted-foreground">Unlock Date</th>
+                <th className="text-left py-3 font-medium text-muted-foreground">CDP</th>
+                <th className="text-right py-3 font-medium text-muted-foreground">Collateral Value</th>
+                <th className="text-right py-3 font-medium text-muted-foreground">CDP Value</th>
+                <th className="text-right py-3 font-medium text-muted-foreground">
+                  <div className="flex items-center justify-end gap-1">
+                    <span>Liquidation Risk</span>
+                    <button className="text-muted-foreground hover:text-primary info-button">
+                      <Info className="h-4 w-4" />
+                    </button>
+                  </div>
+                </th>
+                <th className="text-right py-3 font-medium text-muted-foreground">Collateral Ratio</th>
                 <th className="text-right py-3 font-medium text-muted-foreground">Actions</th>
               </tr>
             </thead>
@@ -153,8 +106,8 @@ export default function VaultsPage() {
                       <Shield className="h-4 w-4 text-primary" />
                     </div>
                     <div>
-                      <p className="font-medium">Stablecoin Yield</p>
-                      <p className="text-xs text-muted-foreground">USDC/USDT</p>
+                      <p className="font-medium">ETH-A CDP #1294</p>
+                      <p className="text-xs text-muted-foreground">Ethereum</p>
                     </div>
                   </div>
                 </td>
@@ -162,16 +115,21 @@ export default function VaultsPage() {
                   <p className="font-medium">$12,500.00</p>
                 </td>
                 <td className="text-right py-4">
-                  <p className="text-primary font-medium">8.5%</p>
+                  <p className="font-medium">$8,750.00</p>
                 </td>
                 <td className="text-right py-4">
-                  <p className="font-medium">$176.43</p>
+                  <p className="font-medium">25%</p>
                 </td>
                 <td className="text-right py-4">
-                  <p className="font-medium">Jun 15, 2023</p>
+                  <p className="font-medium">175%</p>
                 </td>
                 <td className="text-right py-4">
-                  <button className="px-3 py-1 text-xs bg-secondary text-foreground rounded-md">Withdraw</button>
+                  <div className="flex justify-end gap-1">
+                    <button className="px-2 py-1 text-xs bg-secondary text-foreground rounded-md">Add</button>
+                    <button className="px-2 py-1 text-xs bg-secondary text-foreground rounded-md">Remove</button>
+                    <button className="px-2 py-1 text-xs bg-secondary text-foreground rounded-md">Generate</button>
+                    <button className="px-2 py-1 text-xs bg-secondary text-foreground rounded-md">Payback</button>
+                  </div>
                 </td>
               </tr>
               <tr className="border-b border-border">
@@ -181,8 +139,8 @@ export default function VaultsPage() {
                       <Lock className="h-4 w-4 text-primary" />
                     </div>
                     <div>
-                      <p className="font-medium">BTC Hodler</p>
-                      <p className="text-xs text-muted-foreground">BTC</p>
+                      <p className="font-medium">BTC-B CDP #876</p>
+                      <p className="text-xs text-muted-foreground">Bitcoin</p>
                     </div>
                   </div>
                 </td>
@@ -190,16 +148,21 @@ export default function VaultsPage() {
                   <p className="font-medium">$33,172.39</p>
                 </td>
                 <td className="text-right py-4">
-                  <p className="text-primary font-medium">4.2%</p>
+                  <p className="font-medium">$19,903.43</p>
                 </td>
                 <td className="text-right py-4">
-                  <p className="font-medium">$3,677.85</p>
+                  <p className="font-medium">42%</p>
                 </td>
                 <td className="text-right py-4">
-                  <p className="font-medium">Aug 24, 2023</p>
+                  <p className="font-medium">167%</p>
                 </td>
                 <td className="text-right py-4">
-                  <button className="px-3 py-1 text-xs bg-secondary text-foreground rounded-md">Withdraw</button>
+                  <div className="flex justify-end gap-1">
+                    <button className="px-2 py-1 text-xs bg-secondary text-foreground rounded-md">Add</button>
+                    <button className="px-2 py-1 text-xs bg-secondary text-foreground rounded-md">Remove</button>
+                    <button className="px-2 py-1 text-xs bg-secondary text-foreground rounded-md">Generate</button>
+                    <button className="px-2 py-1 text-xs bg-secondary text-foreground rounded-md">Payback</button>
+                  </div>
                 </td>
               </tr>
             </tbody>
