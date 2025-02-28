@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter, Architects_Daughter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/navbar";
+import ContextProvider from "@/context/wagmi-provider";
+import { headers } from "next/headers";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -18,16 +20,21 @@ export const metadata: Metadata = {
   description: "Dream finance application",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const headersList = await headers();
+  const cookies = headersList.get("cookie");
+
   return (
     <html lang="en">
       <body className={`${inter.variable} ${handwriting.variable} antialiased max-w-5xl mx-auto`}>
-        <Navbar />
-        {children}
+        <ContextProvider cookies={cookies}>
+          <Navbar />
+          {children}
+        </ContextProvider>
         
         <div className="absolute inset-x-0 top-[calc(55%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(57%-30rem)] overflow-hidden">
           <div 
