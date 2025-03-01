@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAccount } from "wagmi";
 import DashboardLayout from "@/components/dashboard-layout";
 import { Lock, Shield, Info, AlertTriangle } from "lucide-react";
@@ -12,16 +12,17 @@ import { WithdrawModal } from "./components/WithdrawModal";
 import { LiquidateModal } from "./components/LiquidateModal";
 import { useVault } from "@/lib/hooks/useVault";
 
-// Mock data - replace with actual data from contract
+// Real supported assets on Base Sepolia
 const supportedAssets = [
-  { address: "0x1111111111111111111111111111111111111111", symbol: "ETH" },
-  { address: "0x2222222222222222222222222222222222222222", symbol: "BTC" },
-  { address: "0x3333333333333333333333333333333333333333", symbol: "USDC" },
+  { address: "0xD23b17B993791E805023800d94f13b032525e672", symbol: "CDP" },
+  { address: "0x4200000000000000000000000000000000000006", symbol: "WETH" },
+  { address: "0x036CbD53842c5426634e7929541eC2318f3dCF7e", symbol: "USDC" },
 ];
 
+// Mock user assets - would be fetched from wallet in production
 const userAssets = [
-  { address: "0x1111111111111111111111111111111111111111", symbol: "ETH", balance: "5.0" },
-  { address: "0x2222222222222222222222222222222222222222", symbol: "BTC", balance: "0.25" },
+  { address: "0x4200000000000000000000000000000000000006", symbol: "WETH", balance: "5.0" },
+  { address: "0x036CbD53842c5426634e7929541eC2318f3dCF7e", symbol: "USDC", balance: "1000.0" },
 ];
 
 export default function VaultsPage() {
@@ -33,7 +34,10 @@ export default function VaultsPage() {
     withdraw, 
     liquidate, 
     loading, 
-    isPending 
+    isPending,
+    vaultAddress,
+    tokenAddress,
+    getMaxBorrowAmount
   } = useVault();
   
   // Modal states
@@ -45,8 +49,20 @@ export default function VaultsPage() {
   
   // Selected CDP for actions
   const [selectedCdp, setSelectedCdp] = useState<string | null>(null);
+  const [maxBorrowAmount, setMaxBorrowAmount] = useState("0");
 
-  // Mock CDP data - replace with actual data from contract
+  // Fetch max borrow amount when connected
+  useEffect(() => {
+    if (isConnected) {
+      const fetchMaxBorrow = async () => {
+        const amount = await getMaxBorrowAmount();
+        setMaxBorrowAmount(amount);
+      };
+      fetchMaxBorrow();
+    }
+  }, [isConnected, getMaxBorrowAmount]);
+
+  // Mock vault products with real contract addresses
   const vaultProducts = [
     {
       id: "eth-a",
@@ -57,7 +73,9 @@ export default function VaultsPage() {
       minDeposit: "$500",
       totalLocked: "$12.4M",
       icon: <Shield className="h-10 w-10 text-primary" />,
-      description: "Earn yield on ETH with minimal risk exposure"
+      description: "Earn yield on ETH with minimal risk exposure",
+      vaultAddress: vaultAddress,
+      tokenAddress: tokenAddress
     },
     {
       id: "btc-b",
@@ -68,7 +86,9 @@ export default function VaultsPage() {
       minDeposit: "$1000",
       totalLocked: "$45.8M",
       icon: <Lock className="h-10 w-10 text-primary" />,
-      description: "Earn yield while holding Bitcoin for the long term"
+      description: "Earn yield while holding Bitcoin for the long term",
+      vaultAddress: vaultAddress,
+      tokenAddress: tokenAddress
     }
   ];
 
@@ -345,7 +365,7 @@ export default function VaultsPage() {
         isOpen={borrowModalOpen}
         onClose={() => setBorrowModalOpen(false)}
         onBorrow={handleBorrow}
-        maxBorrowAmount="10000"
+        maxBorrowAmount={maxBorrowAmount}
       />
 
       <RepayModal 
