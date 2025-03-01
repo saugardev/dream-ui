@@ -1,26 +1,35 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { AlertTriangle } from "lucide-react"
+import { useVault } from "@/lib/hooks/useVault"
 
 interface DepositModalProps {
   isOpen: boolean
   onClose: () => void
-  onDeposit: (asset: string, amount: string) => Promise<void>
   supportedAssets: { address: string; symbol: string }[]
 }
 
-export function DepositModal({ isOpen, onClose, onDeposit, supportedAssets }: DepositModalProps) {
-  const [selectedAsset, setSelectedAsset] = useState(supportedAssets[0]?.address || "")
+export function DepositModal({ isOpen, onClose, supportedAssets }: DepositModalProps) {
+  const bptAsset = supportedAssets.find(asset => asset.symbol === "BPT") || supportedAssets[0]
+  
+  const [selectedAsset, setSelectedAsset] = useState(bptAsset?.address || "")
   const [amount, setAmount] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [step, setStep] = useState<"approve" | "deposit">("approve")
   const [error, setError] = useState<string | null>(null)
+
+  const { deposit, loading, isPending } = useVault()
+
+  useEffect(() => {
+    if (bptAsset) {
+      setSelectedAsset(bptAsset.address)
+    }
+  }, [bptAsset])
 
   const handleDeposit = async () => {
     if (!selectedAsset || !amount) return
@@ -30,9 +39,7 @@ export function DepositModal({ isOpen, onClose, onDeposit, supportedAssets }: De
       setError(null)
       setStep("approve")
       
-      // The approval is handled inside the onDeposit function in useVault
-      await onDeposit(selectedAsset, amount)
-      
+      await deposit(selectedAsset as `0x${string}`, amount)
       setAmount("")
       onClose()
     } catch (error) {
@@ -43,7 +50,14 @@ export function DepositModal({ isOpen, onClose, onDeposit, supportedAssets }: De
     }
   }
 
-  const selectedAssetSymbol = supportedAssets.find(asset => asset.address === selectedAsset)?.symbol || ""
+  // Always use BPT symbol
+  const assetSymbol = "BPT"
+
+  const buttonText = isPending 
+    ? "Confirming..." 
+    : loading || isLoading
+    ? "Processing..." 
+    : "Deposit"
 
   return (
     <Dialog open={isOpen} onOpenChange={(open: boolean) => !open && onClose()}>
@@ -51,33 +65,17 @@ export function DepositModal({ isOpen, onClose, onDeposit, supportedAssets }: De
         <DialogHeader>
           <DialogTitle>Deposit Collateral</DialogTitle>
           <DialogDescription>
-            Deposit assets as collateral to borrow against.
+            Deposit {assetSymbol} as collateral to borrow against.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          <div className="grid gap-2">
-            <Label htmlFor="asset">Asset</Label>
-            <Select
-              value={selectedAsset}
-              onValueChange={setSelectedAsset}
-            >
-              <SelectTrigger id="asset">
-                <SelectValue placeholder="Select asset" />
-              </SelectTrigger>
-              <SelectContent>
-                {supportedAssets.map((asset) => (
-                  <SelectItem key={asset.address} value={asset.address}>
-                    {asset.symbol}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
           <div className="grid gap-2">
             <Label htmlFor="amount">Amount</Label>
             <Input
               id="amount"
               type="number"
+              step="0.000001"
+              min="0"
               placeholder="0.0"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
@@ -95,10 +93,10 @@ export function DepositModal({ isOpen, onClose, onDeposit, supportedAssets }: De
             <p>This process requires two transactions:</p>
             <ol className="list-decimal pl-5 mt-2">
               <li className={step === "approve" ? "text-primary font-medium" : ""}>
-                Approve the vault to use your {selectedAssetSymbol}
+                Approve the vault to use your {assetSymbol}
               </li>
               <li className={step === "deposit" ? "text-primary font-medium" : ""}>
-                Deposit {selectedAssetSymbol} into the vault
+                Deposit {assetSymbol} into the vault
               </li>
             </ol>
           </div>
@@ -107,8 +105,11 @@ export function DepositModal({ isOpen, onClose, onDeposit, supportedAssets }: De
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button onClick={handleDeposit} disabled={!selectedAsset || !amount || isLoading}>
-            {isLoading ? "Processing..." : "Deposit"}
+          <Button 
+            onClick={handleDeposit} 
+            disabled={!selectedAsset || !amount || isLoading || loading || isPending}
+          >
+            {buttonText}
           </Button>
         </div>
       </DialogContent>

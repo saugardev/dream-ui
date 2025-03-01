@@ -15,14 +15,12 @@ import { formatEther } from "viem";
 
 // Real supported assets on Base Sepolia
 const supportedAssets = [
-  { address: "0x4200000000000000000000000000000000000006", symbol: "WETH" },
-  { address: "0x036CbD53842c5426634e7929541eC2318f3dCF7e", symbol: "USDC" },
+  { address: "0x39c773e0fba55907c2be1661b9f030e3d15b6779", symbol: "BPT" },
 ];
 
 export default function VaultsPage() {
   const { isConnected } = useAccount();
   const { 
-    deposit, 
     borrow, 
     repay, 
     withdraw, 
@@ -32,11 +30,13 @@ export default function VaultsPage() {
     vaultAddress,
     tokenAddress,
     getMaxBorrowAmount,
-    useUserCollateral,
     useUserCdpBorrowed,
     usePoolCollateral,
     useUserHealthFactor
   } = useVault();
+  
+  // Use the hook directly from useVault
+  const { data: userCollateral } = useVault().useUserCollateral(supportedAssets[0].address as `0x${string}`);
   
   // Modal states
   const [depositModalOpen, setDepositModalOpen] = useState(false);
@@ -57,10 +57,6 @@ export default function VaultsPage() {
   // Get user health factor
   const { data: healthFactor } = useUserHealthFactor();
 
-  // Fetch user collateral for each supported asset
-  const wethCollateral = useUserCollateral(supportedAssets[0].address as `0x${string}`);
-  const usdcCollateral = useUserCollateral(supportedAssets[1].address as `0x${string}`);
-  
   // Fetch pool collateral for each supported asset
   const poolWethCollateral = usePoolCollateral(supportedAssets[0].address as `0x${string}`);
 
@@ -73,18 +69,12 @@ export default function VaultsPage() {
       const amount = await getMaxBorrowAmount();
       setMaxBorrowAmount(amount);
       
-      // Update user assets with actual balances from contracts
       const updatedAssets = [
         { 
           address: supportedAssets[0].address, 
           symbol: supportedAssets[0].symbol, 
-          balance: wethCollateral.data ? formatEther(wethCollateral.data as bigint) : "0" 
+          balance: userCollateral ? formatEther(BigInt(userCollateral.toString())) : "0" 
         },
-        { 
-          address: supportedAssets[1].address, 
-          symbol: supportedAssets[1].symbol, 
-          balance: usdcCollateral.data ? formatEther(usdcCollateral.data as bigint) : "0" 
-        }
       ];
       setUserAssets(updatedAssets);
     } catch (error) {
@@ -98,26 +88,19 @@ export default function VaultsPage() {
     fetchUserData();
   }, [
     isConnected, 
-    wethCollateral.data, 
-    usdcCollateral.data
+    userCollateral
   ]);
 
   // Calculate total collateral value (mock price data for demo)
   const calculateCollateralValue = () => {
-    if (!wethCollateral.data && !usdcCollateral.data) return "$0.00";
+    if (!userCollateral) return "$0.00";
     
     // Mock prices - in a real app, these would come from oracles
     const ethPrice = 3500;
-    const usdcPrice = 1;
     
-    const wethValue = wethCollateral.data ? 
-      Number(formatEther(wethCollateral.data as bigint)) * ethPrice : 0;
+    const bptValue = Number(formatEther(BigInt(userCollateral.toString()))) * ethPrice;
     
-    const usdcValue = usdcCollateral.data ? 
-      Number(formatEther(usdcCollateral.data as bigint)) * usdcPrice : 0;
-    
-    const totalValue = wethValue + usdcValue;
-    return `$${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    return `$${bptValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
   // Calculate CDP value
@@ -165,13 +148,9 @@ export default function VaultsPage() {
 
   // Check if user has any active CDPs
   const hasActiveCdps = () => {
-    // Check if user has borrowed CDP tokens
     const hasBorrowed = cdpBorrowed && Number(formatEther(cdpBorrowed as bigint)) > 0;
     
-    // Check if user has deposited collateral
-    const hasCollateral = 
-      (wethCollateral.data && Number(formatEther(wethCollateral.data as bigint)) > 0) || 
-      (usdcCollateral.data && Number(formatEther(usdcCollateral.data as bigint)) > 0);
+    const hasCollateral = userCollateral && Number(formatEther(BigInt(userCollateral.toString()))) > 0;
     
     return hasBorrowed || hasCollateral;
   };
@@ -191,15 +170,6 @@ export default function VaultsPage() {
   ] : [];
 
   // Contract interaction handlers
-  const handleDeposit = async (asset: string, amount: string) => {
-    try {
-      await deposit(asset as `0x${string}`, amount);
-      console.log(`Successfully deposited ${amount} of asset ${asset}`);
-    } catch (error) {
-      console.error("Deposit error:", error);
-    }
-  };
-
   const handleBorrow = async (amount: string) => {
     try {
       await borrow(amount);
@@ -267,6 +237,35 @@ export default function VaultsPage() {
                 <p className="text-sm">Loading your vault data...</p>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {isConnected && (
+        <div className="mb-6">
+          <div className="dashboard-card">
+            <h3 className="text-lg font-medium mb-4">Your Deposited Collateral</h3>
+            <div className="grid gap-4">
+              <div className="flex justify-between items-center p-4 border border-border rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-secondary rounded-lg">
+                    <Shield className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium">BPT Token</p>
+                    <p className="text-sm text-muted-foreground">Deposited Balance</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="font-medium">
+                    {userCollateral ? formatEther(BigInt(userCollateral.toString())) : "0"} BPT
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    ≈ {calculateCollateralValue()}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -466,7 +465,6 @@ export default function VaultsPage() {
       <DepositModal 
         isOpen={depositModalOpen}
         onClose={() => setDepositModalOpen(false)}
-        onDeposit={handleDeposit}
         supportedAssets={supportedAssets}
       />
 

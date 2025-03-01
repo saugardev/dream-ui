@@ -5,8 +5,8 @@ import { tokenAbi } from '@/abi/token';
 import { parseEther } from 'viem';
 
 // Contract addresses on Base Sepolia
-const VAULT_CONTRACT_ADDRESS = '0x6e8CdBE9CB9A90F75Fe4D5B2F08B9181b04f4Ea9' as `0x${string}`;
-const TOKEN_CONTRACT_ADDRESS = '0xD23b17B993791E805023800d94f13b032525e672' as `0x${string}`;
+const VAULT_CONTRACT_ADDRESS = '0x58E0A1975bD38f57D3ccaB2BEA04ebab2a1E0976' as `0x${string}`;
+const TOKEN_CONTRACT_ADDRESS = '0x39c773e0FBA55907c2Be1661b9f030E3D15b6779' as `0x${string}`;
 
 // Constants from the contract are defined in the smart contract
 
