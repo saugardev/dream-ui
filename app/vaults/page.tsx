@@ -32,11 +32,12 @@ export default function VaultsPage() {
     getMaxBorrowAmount,
     useUserCdpBorrowed,
     usePoolCollateral,
-    useUserHealthFactor
+    useUserHealthFactor,
+    useUserCollateral
   } = useVault();
   
-  // Use the hook directly from useVault
-  const { data: userCollateral } = useVault().useUserCollateral(supportedAssets[0].address as `0x${string}`);
+  // Get user's collateral
+  const { data: userCollateral } = useUserCollateral(supportedAssets[0].address as `0x${string}`);
   
   // Modal states
   const [depositModalOpen, setDepositModalOpen] = useState(false);

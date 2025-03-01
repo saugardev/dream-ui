@@ -102,10 +102,7 @@ export function useVault() {
   const deposit = async (assetAddress: `0x${string}`, amount: string) => {
     try {
       setLoading(true);
-      // First approve the token
-      await approveToken(assetAddress, amount);
       
-      // Then deposit
       const hash = await writeContractAsync({
         address: VAULT_CONTRACT_ADDRESS,
         abi: vaultAbi,

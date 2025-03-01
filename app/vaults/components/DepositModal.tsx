@@ -23,7 +23,7 @@ export function DepositModal({ isOpen, onClose, supportedAssets }: DepositModalP
   const [step, setStep] = useState<"approve" | "deposit">("approve")
   const [error, setError] = useState<string | null>(null)
 
-  const { deposit, loading, isPending } = useVault()
+  const { deposit, approveToken, loading, isPending } = useVault()
 
   useEffect(() => {
     if (bptAsset) {
@@ -37,14 +37,21 @@ export function DepositModal({ isOpen, onClose, supportedAssets }: DepositModalP
     try {
       setIsLoading(true)
       setError(null)
-      setStep("approve")
+      
+      if (step === "approve") {
+        await approveToken(selectedAsset as `0x${string}`, amount)
+        setStep("deposit")
+        setIsLoading(false)
+        return
+      }
       
       await deposit(selectedAsset as `0x${string}`, amount)
       setAmount("")
       onClose()
     } catch (error) {
       console.error("Deposit error:", error)
-      setError("Failed to deposit. Please try again.")
+      setError(step === "approve" ? "Failed to approve. Please try again." : "Failed to deposit. Please try again.")
+      setStep("approve") // Reset to approve step if there's an error
     } finally {
       setIsLoading(false)
     }
@@ -57,7 +64,9 @@ export function DepositModal({ isOpen, onClose, supportedAssets }: DepositModalP
     ? "Confirming..." 
     : loading || isLoading
     ? "Processing..." 
-    : "Deposit"
+    : step === "approve"
+    ? "Approve BPT"
+    : "Deposit BPT"
 
   return (
     <Dialog open={isOpen} onOpenChange={(open: boolean) => !open && onClose()}>
