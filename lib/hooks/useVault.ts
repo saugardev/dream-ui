@@ -192,6 +192,10 @@ export function useVault() {
       const repayAmount = parseFloat(amount);
       mockCdpBorrowed = Math.max(0, mockCdpBorrowed - repayAmount);
       
+      // Add the repaid amount back to the user's collateral
+      // In a real CDP system, this would release the equivalent amount of collateral
+      mockUserCollateral += repayAmount;
+      
       // If fully repaid, remove the active CDP
       if (mockCdpBorrowed === 0) {
         mockActiveCdp = null;
