@@ -31,13 +31,12 @@ export default function VaultsPage() {
     tokenAddress,
     getMaxBorrowAmount,
     useUserCdpBorrowed,
-    usePoolCollateral,
     useUserHealthFactor,
     useUserCollateral
   } = useVault();
   
   // Get user's collateral
-  const { data: userCollateral } = useUserCollateral(supportedAssets[0].address as `0x${string}`);
+  const { data: userCollateral } = useUserCollateral();
   
   // Modal states
   const [depositModalOpen, setDepositModalOpen] = useState(false);
@@ -58,8 +57,6 @@ export default function VaultsPage() {
   // Get user health factor
   const { data: healthFactor } = useUserHealthFactor();
 
-  // Fetch pool collateral for each supported asset
-  const poolWethCollateral = usePoolCollateral(supportedAssets[0].address as `0x${string}`);
 
   // Fetch max borrow amount and user assets when connected
   const fetchUserData = async () => {
@@ -74,7 +71,7 @@ export default function VaultsPage() {
         { 
           address: supportedAssets[0].address, 
           symbol: supportedAssets[0].symbol, 
-          balance: userCollateral ? formatEther(BigInt(userCollateral.toString())) : "0" 
+          balance: userCollateral ? userCollateral.toString() : "0" 
         },
       ];
       setUserAssets(updatedAssets);
@@ -99,7 +96,7 @@ export default function VaultsPage() {
     // Mock prices - in a real app, these would come from oracles
     const ethPrice = 3500;
     
-    const bptValue = Number(formatEther(BigInt(userCollateral.toString()))) * ethPrice;
+    const bptValue = Number(userCollateral) * ethPrice;
     
     return `$${bptValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
@@ -111,7 +108,7 @@ export default function VaultsPage() {
     // Mock CDP price - in a real app, this would be calculated from the contract
     const cdpPrice = 1; // 1:1 with USD for simplicity
     
-    const cdpValue = Number(formatEther(cdpBorrowed as bigint)) * cdpPrice;
+    const cdpValue = Number(cdpBorrowed) * cdpPrice;
     return `$${cdpValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
@@ -138,9 +135,7 @@ export default function VaultsPage() {
     risk: "Low",
     lockPeriod: "30 days",
     minDeposit: "$500",
-    totalLocked: poolWethCollateral.data ? 
-      `$${(Number(formatEther(poolWethCollateral.data as bigint)) * 3500).toLocaleString(undefined, { maximumFractionDigits: 2 })}` : 
-      "$0.00",
+    totalLocked: "$35,000.00", // Mock value for demo
     icon: <Shield className="h-10 w-10 text-primary" />,
     description: "Earn yield on ETH with minimal risk exposure",
     vaultAddress: vaultAddress,
@@ -149,9 +144,9 @@ export default function VaultsPage() {
 
   // Check if user has any active CDPs
   const hasActiveCdps = () => {
-    const hasBorrowed = cdpBorrowed && Number(formatEther(cdpBorrowed as bigint)) > 0;
+    const hasBorrowed = cdpBorrowed && Number(cdpBorrowed) > 0;
     
-    const hasCollateral = userCollateral && Number(formatEther(BigInt(userCollateral.toString()))) > 0;
+    const hasCollateral = userCollateral && Number(userCollateral) > 0;
     
     return hasBorrowed || hasCollateral;
   };
@@ -175,6 +170,8 @@ export default function VaultsPage() {
     try {
       await borrow(amount);
       console.log(`Successfully borrowed ${amount} CDP`);
+      // Refresh data after borrowing
+      fetchUserData();
     } catch (error) {
       console.error("Borrow error:", error);
     }
@@ -184,6 +181,8 @@ export default function VaultsPage() {
     try {
       await repay(amount);
       console.log(`Successfully repaid ${amount} CDP for CDP ${selectedCdp}`);
+      // Refresh data after repaying
+      fetchUserData();
     } catch (error) {
       console.error("Repay error:", error);
     }
@@ -193,6 +192,8 @@ export default function VaultsPage() {
     try {
       await withdraw(asset as `0x${string}`, amount);
       console.log(`Successfully withdrew ${amount} of asset ${asset}`);
+      // Refresh data after withdrawing
+      fetchUserData();
     } catch (error) {
       console.error("Withdraw error:", error);
     }
@@ -202,6 +203,8 @@ export default function VaultsPage() {
     try {
       await liquidate(userAddress as `0x${string}`);
       console.log(`Successfully liquidated position for user ${userAddress}`);
+      // Refresh data after liquidating
+      fetchUserData();
     } catch (error) {
       console.error("Liquidate error:", error);
     }
@@ -480,7 +483,7 @@ export default function VaultsPage() {
         isOpen={repayModalOpen}
         onClose={() => setRepayModalOpen(false)}
         onRepay={handleRepay}
-        currentDebt={cdpBorrowed ? formatEther(cdpBorrowed as bigint) : "0"}
+        currentDebt={cdpBorrowed ? cdpBorrowed.toString() : "0"}
       />
 
       <WithdrawModal 

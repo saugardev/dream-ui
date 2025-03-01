@@ -8,7 +8,18 @@ import { parseEther } from 'viem';
 const VAULT_CONTRACT_ADDRESS = '0x58E0A1975bD38f57D3ccaB2BEA04ebab2a1E0976' as `0x${string}`;
 const TOKEN_CONTRACT_ADDRESS = '0x39c773e0FBA55907c2Be1661b9f030E3D15b6779' as `0x${string}`;
 
-// Constants from the contract are defined in the smart contract
+// Mock state for demo
+let mockUserCollateral = 0;
+let mockCdpBorrowed = 0;
+let mockActiveCdp: {
+  id: string;
+  type: string;
+  collateralValue: string;
+  cdpValue: string;
+  liquidationRisk: string;
+  collateralRatio: string;
+  asset: string;
+} | null = null;
 
 export function useVault() {
   const { address } = useAccount();
@@ -25,29 +36,23 @@ export function useVault() {
   });
 
   // Get user collateral for a specific asset
-  const useUserCollateral = (assetAddress?: `0x${string}`) => {
-    return useReadContract({
-      address: VAULT_CONTRACT_ADDRESS,
-      abi: vaultAbi,
-      functionName: 'userCollateral',
-      args: address && assetAddress ? [address, assetAddress] : undefined,
-      query: {
-        enabled: Boolean(address && assetAddress),
-      },
-    });
+  const useUserCollateral = () => {
+    // Return mock data for demo
+    return {
+      data: mockUserCollateral,
+      isLoading: false,
+      isError: false,
+    };
   };
 
   // Get user's CDP borrowed amount
   const useUserCdpBorrowed = () => {
-    return useReadContract({
-      address: VAULT_CONTRACT_ADDRESS,
-      abi: vaultAbi,
-      functionName: 'cdpBorrowed',
-      args: address ? [address] : undefined,
-      query: {
-        enabled: Boolean(address),
-      },
-    });
+    // Return mock data for demo
+    return {
+      data: mockCdpBorrowed,
+      isLoading: false,
+      isError: false,
+    };
   };
 
   // Get pool collateral for a specific asset
@@ -74,15 +79,19 @@ export function useVault() {
 
   // Calculate user health factor
   const useUserHealthFactor = () => {
-    // This would require multiple contract calls and calculations
-    // For simplicity, we'll return a mock value for now
-    return { data: 200 }; // 200% health factor
+    // Mock health factor for demo
+    return { 
+      data: mockCdpBorrowed > 0 ? 200 : 0, // 200% health factor when CDP exists
+      isLoading: false,
+      isError: false,
+    };
   };
 
   // Approve token for vault
   const approveToken = async (assetAddress: `0x${string}`, amount: string) => {
     try {
       setLoading(true);
+      // Still call the real contract for MetaMask interaction
       const hash = await writeContractAsync({
         address: assetAddress,
         abi: tokenAbi,
@@ -103,12 +112,17 @@ export function useVault() {
     try {
       setLoading(true);
       
+      // Call the real contract for MetaMask interaction
       const hash = await writeContractAsync({
         address: VAULT_CONTRACT_ADDRESS,
         abi: vaultAbi,
         functionName: 'deposit',
         args: [assetAddress, parseEther(amount)],
       });
+      
+      // Update mock state after successful transaction
+      mockUserCollateral += parseFloat(amount);
+      
       return hash;
     } catch (error) {
       console.error('Error depositing:', error);
@@ -122,12 +136,28 @@ export function useVault() {
   const borrow = async (amount: string) => {
     try {
       setLoading(true);
+      // Call the real contract for MetaMask interaction
       const hash = await writeContractAsync({
         address: VAULT_CONTRACT_ADDRESS,
         abi: vaultAbi,
         functionName: 'borrow',
         args: [parseEther(amount)],
       });
+      
+      // Update mock state after successful transaction
+      mockCdpBorrowed += parseFloat(amount);
+      
+      // Create mock active CDP
+      mockActiveCdp = {
+        id: "1",
+        type: "ETH-A",
+        collateralValue: `$${(mockUserCollateral * 3500).toFixed(2)}`,
+        cdpValue: `$${mockCdpBorrowed.toFixed(2)}`,
+        liquidationRisk: "10%",
+        collateralRatio: "200%",
+        asset: "Ethereum"
+      };
+      
       return hash;
     } catch (error) {
       console.error('Error borrowing:', error);
@@ -144,13 +174,23 @@ export function useVault() {
       // First approve the CDP token
       await approveToken(TOKEN_CONTRACT_ADDRESS, amount);
       
-      // Then repay
+      // Then repay - call the real contract for MetaMask interaction
       const hash = await writeContractAsync({
         address: VAULT_CONTRACT_ADDRESS,
         abi: vaultAbi,
         functionName: 'repay',
         args: [parseEther(amount)],
       });
+      
+      // Update mock state after successful transaction
+      const repayAmount = parseFloat(amount);
+      mockCdpBorrowed = Math.max(0, mockCdpBorrowed - repayAmount);
+      
+      // If fully repaid, remove the active CDP
+      if (mockCdpBorrowed === 0) {
+        mockActiveCdp = null;
+      }
+      
       return hash;
     } catch (error) {
       console.error('Error repaying:', error);
@@ -164,12 +204,18 @@ export function useVault() {
   const withdraw = async (assetAddress: `0x${string}`, amount: string) => {
     try {
       setLoading(true);
+      // Call the real contract for MetaMask interaction
       const hash = await writeContractAsync({
         address: VAULT_CONTRACT_ADDRESS,
         abi: vaultAbi,
         functionName: 'withdraw',
         args: [assetAddress, parseEther(amount)],
       });
+      
+      // Update mock state after successful transaction
+      const withdrawAmount = parseFloat(amount);
+      mockUserCollateral = Math.max(0, mockUserCollateral - withdrawAmount);
+      
       return hash;
     } catch (error) {
       console.error('Error withdrawing:', error);
@@ -183,6 +229,7 @@ export function useVault() {
   const liquidate = async (userAddress: `0x${string}`) => {
     try {
       setLoading(true);
+      // Call the real contract for MetaMask interaction
       const hash = await writeContractAsync({
         address: VAULT_CONTRACT_ADDRESS,
         abi: vaultAbi,
@@ -202,9 +249,20 @@ export function useVault() {
   const getMaxBorrowAmount = async () => {
     if (!address) return "0";
     
-    // This would require complex calculations based on user's collateral
-    // For simplicity, we'll return a mock value for now
-    return "10000";
+    // For demo, return a value based on mock collateral
+    return (mockUserCollateral * 0.66).toString(); // 66% LTV ratio
+  };
+
+  // Get active CDP for the user
+  const getActiveCdp = () => {
+    return mockActiveCdp;
+  };
+
+  // Reset mock state (for testing)
+  const resetMockState = () => {
+    mockUserCollateral = 0;
+    mockCdpBorrowed = 0;
+    mockActiveCdp = null;
   };
 
   return {
@@ -221,6 +279,8 @@ export function useVault() {
     withdraw,
     liquidate,
     getMaxBorrowAmount,
+    getActiveCdp,
+    resetMockState,
     loading,
     isPending,
     txHash,
