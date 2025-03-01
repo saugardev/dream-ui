@@ -11,7 +11,6 @@ import { RepayModal } from "./components/RepayModal";
 import { WithdrawModal } from "./components/WithdrawModal";
 import { LiquidateModal } from "./components/LiquidateModal";
 import { useVault } from "@/lib/hooks/useVault";
-import { formatEther } from "viem";
 
 // Real supported assets on Base Sepolia
 const supportedAssets = [
@@ -262,7 +261,7 @@ export default function VaultsPage() {
                 </div>
                 <div className="text-right">
                   <p className="font-medium">
-                    {userCollateral ? formatEther(BigInt(userCollateral.toString())) : "0"} BPT
+                    {userCollateral ? userCollateral.toString() : "0"} BPT
                   </p>
                   <p className="text-sm text-muted-foreground">
                     ≈ {calculateCollateralValue()}
