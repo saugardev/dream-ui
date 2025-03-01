@@ -6,7 +6,54 @@ import { X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
-const Dialog = DialogPrimitive.Root
+// Calculate scrollbar width on mount and store it as a CSS variable
+const useScrollbarSize = () => {
+  React.useEffect(() => {
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
+    document.documentElement.style.setProperty('--scrollbar-width', `${scrollbarWidth}px`)
+  }, [])
+}
+
+const Dialog = ({ ...props }) => {
+  useScrollbarSize()
+  
+  // Add a class to the body when a dialog is open to prevent layout shift
+  React.useEffect(() => {
+    if (props.open) {
+      // Store current scroll position
+      const scrollY = window.scrollY
+      
+      // Add padding equal to scrollbar width to prevent layout shift
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
+      
+      // Lock the body scroll but maintain the scrollbar width
+      document.body.style.overflow = 'hidden'
+      document.body.style.paddingRight = `${scrollbarWidth}px`
+      document.body.classList.add('dialog-open')
+      
+      // Maintain scroll position
+      document.body.style.top = `-${scrollY}px`
+      document.body.style.position = 'fixed'
+      document.body.style.width = '100%'
+    } else {
+      // Restore normal scrolling and position
+      const scrollY = document.body.style.top
+      document.body.style.position = ''
+      document.body.style.top = ''
+      document.body.style.overflow = ''
+      document.body.style.paddingRight = ''
+      document.body.style.width = ''
+      document.body.classList.remove('dialog-open')
+      
+      // Restore scroll position
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || '0', 10) * -1)
+      }
+    }
+  }, [props.open])
+
+  return <DialogPrimitive.Root {...props} />
+}
 
 const DialogTrigger = DialogPrimitive.Trigger
 
@@ -21,7 +68,7 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      "fixed inset-0 z-50 bg-black/80 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     )}
     {...props}
@@ -42,6 +89,12 @@ const DialogContent = React.forwardRef<
         className
       )}
       {...props}
+      style={{
+        ...props.style,
+        // Ensure the modal doesn't affect the layout
+        position: 'fixed',
+        boxSizing: 'border-box',
+      }}
     >
       {children}
       <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">

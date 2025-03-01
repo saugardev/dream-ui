@@ -89,11 +89,25 @@
 }
 
 @layer base {
+  html {
+    scrollbar-gutter: stable;
+    overflow-y: scroll;
+    width: 100%;
+  }
+  
+  body.dialog-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    padding-right: var(--scrollbar-width, 0px);
+  }
+  
   * {
     @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
+    width: 100%;
   }
 
   /* Modern trading dashboard styles */

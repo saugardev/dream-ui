@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/navbar";
 import ContextProvider from "@/context/wagmi-provider";
 import { headers } from "next/headers";
+import ScrollbarSize from "@/components/scrollbar-size";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -30,11 +31,14 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${handwriting.variable} antialiased max-w-5xl mx-auto`}>
-        <ContextProvider cookies={cookies}>
-          <Navbar />
-          {children}
-        </ContextProvider>
+      <body className={`${inter.variable} ${handwriting.variable} antialiased`}>
+        <div className="max-w-5xl mx-auto">
+          <ContextProvider cookies={cookies}>
+            <ScrollbarSize />
+            <Navbar />
+            {children}
+          </ContextProvider>
+        </div>
         
         <div className="absolute inset-x-0 top-[calc(55%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(57%-30rem)] overflow-hidden">
           <div 
