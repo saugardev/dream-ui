@@ -145,13 +145,19 @@ export function useVault() {
       });
       
       // Update mock state after successful transaction
-      mockCdpBorrowed += parseFloat(amount);
+      const borrowAmount = parseFloat(amount);
+      mockCdpBorrowed += borrowAmount;
+      
+      // Subtract the borrowed amount from the user's collateral
+      // In a real CDP system, collateral remains locked but we're simulating
+      // the visual effect of funds being used
+      mockUserCollateral = Math.max(0, mockUserCollateral - borrowAmount);
       
       // Create mock active CDP
       mockActiveCdp = {
         id: "1",
         type: "ETH-A",
-        collateralValue: `$${(mockUserCollateral * 3500).toFixed(2)}`,
+        collateralValue: mockCdpBorrowed.toFixed(2),
         cdpValue: `$${mockCdpBorrowed.toFixed(2)}`,
         liquidationRisk: "10%",
         collateralRatio: "200%",
@@ -250,7 +256,9 @@ export function useVault() {
     if (!address) return "0";
     
     // For demo, return a value based on mock collateral
-    return (mockUserCollateral * 0.66).toString(); // 66% LTV ratio
+    // Using a 66% LTV ratio (Loan-to-Value)
+    // This means users can borrow up to 66% of their collateral value
+    return (mockUserCollateral * 0.66).toString();
   };
 
   // Get active CDP for the user

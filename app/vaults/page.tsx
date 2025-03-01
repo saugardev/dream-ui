@@ -88,8 +88,8 @@ export default function VaultsPage() {
     userCollateral
   ]);
 
-  // Calculate total collateral value (mock price data for demo)
-  const calculateCollateralValue = () => {
+  // Calculate the displayed collateral value for the "Your Deposited Collateral" section
+  const calculateDepositedCollateralValue = () => {
     if (!userCollateral) return "$0.00";
     
     // Mock prices - in a real app, these would come from oracles
@@ -98,6 +98,21 @@ export default function VaultsPage() {
     const bptValue = Number(userCollateral) * ethPrice;
     
     return `$${bptValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
+
+  // Calculate total collateral value (mock price data for demo)
+  const calculateCollateralValue = () => {
+    if (!cdpBorrowed) return "$0.00";
+    
+    // Collateral value should be 3500 times the CDP value
+    // This represents the value of ETH collateral backing the CDP
+    const ethPrice = 3500;
+    const cdpValue = Number(cdpBorrowed);
+    
+    // Multiply by ETH price to get the collateral value
+    const collateralValue = cdpValue * ethPrice;
+    
+    return `$${collateralValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
   // Calculate CDP value
@@ -145,9 +160,8 @@ export default function VaultsPage() {
   const hasActiveCdps = () => {
     const hasBorrowed = cdpBorrowed && Number(cdpBorrowed) > 0;
     
-    const hasCollateral = userCollateral && Number(userCollateral) > 0;
-    
-    return hasBorrowed || hasCollateral;
+    // Only check if the user has borrowed, since that's what determines if they have an active CDP
+    return hasBorrowed;
   };
 
   // User CDPs based on contract data
@@ -214,7 +228,8 @@ export default function VaultsPage() {
     setSelectedCdp(cdpId);
     
     if (action === 'borrow') {
-      setBorrowModalOpen(true);
+      // For existing CDPs, 'borrow' action is used to add more collateral
+      setDepositModalOpen(true); // Open deposit modal instead of borrow modal for existing CDPs
     } else if (action === 'repay') {
       setRepayModalOpen(true);
     } else if (action === 'withdraw') {
@@ -264,7 +279,7 @@ export default function VaultsPage() {
                     {userCollateral ? userCollateral.toString() : "0"} BPT
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    ≈ {calculateCollateralValue()}
+                    ≈ {calculateDepositedCollateralValue()}
                   </p>
                 </div>
               </div>
@@ -334,15 +349,6 @@ export default function VaultsPage() {
               : "CONNECT WALLET TO VIEW CDPs"
             }
           </p>
-          {isConnected && (
-            <Button 
-              variant="outline" 
-              onClick={() => setLiquidateModalOpen(true)}
-              disabled={loading || isPending}
-            >
-              Liquidate Position
-            </Button>
-          )}
         </div>
         {isConnected && userCdps.length > 0 ? (
           <div className="overflow-x-auto">
@@ -395,26 +401,10 @@ export default function VaultsPage() {
                         <Button 
                           variant="secondary" 
                           size="sm" 
-                          onClick={() => setDepositModalOpen(true)}
-                          disabled={loading || isPending}
-                        >
-                          Add
-                        </Button>
-                        <Button 
-                          variant="secondary" 
-                          size="sm" 
-                          onClick={() => openActionModal(cdp.id, 'withdraw')}
-                          disabled={loading || isPending}
-                        >
-                          Remove
-                        </Button>
-                        <Button 
-                          variant="secondary" 
-                          size="sm" 
                           onClick={() => openActionModal(cdp.id, 'borrow')}
                           disabled={loading || isPending}
                         >
-                          Generate
+                          Add Collateral
                         </Button>
                         <Button 
                           variant="secondary" 
@@ -422,7 +412,7 @@ export default function VaultsPage() {
                           onClick={() => openActionModal(cdp.id, 'repay')}
                           disabled={loading || isPending}
                         >
-                          Payback
+                          Repay
                         </Button>
                       </div>
                     </td>
