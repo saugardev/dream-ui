@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAccount } from "wagmi";
 import DashboardLayout from "@/components/dashboard-layout";
-import { Lock, Shield, Info, AlertTriangle } from "lucide-react";
+import { Shield, Info, AlertTriangle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DepositModal } from "./components/DepositModal";
 import { BorrowModal } from "./components/BorrowModal";
@@ -11,18 +11,12 @@ import { RepayModal } from "./components/RepayModal";
 import { WithdrawModal } from "./components/WithdrawModal";
 import { LiquidateModal } from "./components/LiquidateModal";
 import { useVault } from "@/lib/hooks/useVault";
+import { formatEther } from "viem";
 
 // Real supported assets on Base Sepolia
 const supportedAssets = [
-  { address: "0xD23b17B993791E805023800d94f13b032525e672", symbol: "CDP" },
   { address: "0x4200000000000000000000000000000000000006", symbol: "WETH" },
   { address: "0x036CbD53842c5426634e7929541eC2318f3dCF7e", symbol: "USDC" },
-];
-
-// Mock user assets - would be fetched from wallet in production
-const userAssets = [
-  { address: "0x4200000000000000000000000000000000000006", symbol: "WETH", balance: "5.0" },
-  { address: "0x036CbD53842c5426634e7929541eC2318f3dCF7e", symbol: "USDC", balance: "1000.0" },
 ];
 
 export default function VaultsPage() {
@@ -37,7 +31,11 @@ export default function VaultsPage() {
     isPending,
     vaultAddress,
     tokenAddress,
-    getMaxBorrowAmount
+    getMaxBorrowAmount,
+    useUserCollateral,
+    useUserCdpBorrowed,
+    usePoolCollateral,
+    useUserHealthFactor
   } = useVault();
   
   // Modal states
@@ -50,71 +48,147 @@ export default function VaultsPage() {
   // Selected CDP for actions
   const [selectedCdp, setSelectedCdp] = useState<string | null>(null);
   const [maxBorrowAmount, setMaxBorrowAmount] = useState("0");
+  const [userAssets, setUserAssets] = useState<{ address: string; symbol: string; balance: string }[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState(true);
 
-  // Fetch max borrow amount when connected
+  // Get user's CDP borrowed amount
+  const { data: cdpBorrowed } = useUserCdpBorrowed();
+  
+  // Get user health factor
+  const { data: healthFactor } = useUserHealthFactor();
+
+  // Fetch user collateral for each supported asset
+  const wethCollateral = useUserCollateral(supportedAssets[0].address as `0x${string}`);
+  const usdcCollateral = useUserCollateral(supportedAssets[1].address as `0x${string}`);
+  
+  // Fetch pool collateral for each supported asset
+  const poolWethCollateral = usePoolCollateral(supportedAssets[0].address as `0x${string}`);
+
+  // Fetch max borrow amount and user assets when connected
+  const fetchUserData = async () => {
+    if (!isConnected) return;
+    
+    setIsLoadingData(true);
+    try {
+      const amount = await getMaxBorrowAmount();
+      setMaxBorrowAmount(amount);
+      
+      // Update user assets with actual balances from contracts
+      const updatedAssets = [
+        { 
+          address: supportedAssets[0].address, 
+          symbol: supportedAssets[0].symbol, 
+          balance: wethCollateral.data ? formatEther(wethCollateral.data as bigint) : "0" 
+        },
+        { 
+          address: supportedAssets[1].address, 
+          symbol: supportedAssets[1].symbol, 
+          balance: usdcCollateral.data ? formatEther(usdcCollateral.data as bigint) : "0" 
+        }
+      ];
+      setUserAssets(updatedAssets);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setIsLoadingData(false);
+    }
+  };
+
   useEffect(() => {
-    if (isConnected) {
-      const fetchMaxBorrow = async () => {
-        const amount = await getMaxBorrowAmount();
-        setMaxBorrowAmount(amount);
-      };
-      fetchMaxBorrow();
-    }
-  }, [isConnected, getMaxBorrowAmount]);
+    fetchUserData();
+  }, [
+    isConnected, 
+    wethCollateral.data, 
+    usdcCollateral.data
+  ]);
 
-  // Mock vault products with real contract addresses
-  const vaultProducts = [
-    {
-      id: "eth-a",
-      name: "ETH-A",
-      apy: "8.5%",
-      risk: "Low",
-      lockPeriod: "30 days",
-      minDeposit: "$500",
-      totalLocked: "$12.4M",
-      icon: <Shield className="h-10 w-10 text-primary" />,
-      description: "Earn yield on ETH with minimal risk exposure",
-      vaultAddress: vaultAddress,
-      tokenAddress: tokenAddress
-    },
-    {
-      id: "btc-b",
-      name: "BTC-B",
-      apy: "4.2%",
-      risk: "Medium",
-      lockPeriod: "90 days",
-      minDeposit: "$1000",
-      totalLocked: "$45.8M",
-      icon: <Lock className="h-10 w-10 text-primary" />,
-      description: "Earn yield while holding Bitcoin for the long term",
-      vaultAddress: vaultAddress,
-      tokenAddress: tokenAddress
-    }
-  ];
+  // Calculate total collateral value (mock price data for demo)
+  const calculateCollateralValue = () => {
+    if (!wethCollateral.data && !usdcCollateral.data) return "$0.00";
+    
+    // Mock prices - in a real app, these would come from oracles
+    const ethPrice = 3500;
+    const usdcPrice = 1;
+    
+    const wethValue = wethCollateral.data ? 
+      Number(formatEther(wethCollateral.data as bigint)) * ethPrice : 0;
+    
+    const usdcValue = usdcCollateral.data ? 
+      Number(formatEther(usdcCollateral.data as bigint)) * usdcPrice : 0;
+    
+    const totalValue = wethValue + usdcValue;
+    return `$${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
 
-  // Mock user CDPs - replace with actual data from contract
-  const userCdps = [
+  // Calculate CDP value
+  const calculateCdpValue = () => {
+    if (!cdpBorrowed) return "$0.00";
+    
+    // Mock CDP price - in a real app, this would be calculated from the contract
+    const cdpPrice = 1; // 1:1 with USD for simplicity
+    
+    const cdpValue = Number(formatEther(cdpBorrowed as bigint)) * cdpPrice;
+    return `$${cdpValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
+
+  // Calculate liquidation risk
+  const calculateLiquidationRisk = () => {
+    if (!healthFactor) return "0%";
+    
+    // Mock calculation - in a real app, this would be more complex
+    const risk = 100 - (Number(healthFactor) / 2);
+    return `${Math.max(0, Math.min(100, risk)).toFixed(0)}%`;
+  };
+
+  // Calculate collateral ratio
+  const calculateCollateralRatio = () => {
+    if (!healthFactor) return "0%";
+    return `${healthFactor}%`;
+  };
+
+  // Vault products with real contract addresses
+  const vaultProduct = {
+    id: "eth-a",
+    name: "ETH-A",
+    apy: "8.5%",
+    risk: "Low",
+    lockPeriod: "30 days",
+    minDeposit: "$500",
+    totalLocked: poolWethCollateral.data ? 
+      `$${(Number(formatEther(poolWethCollateral.data as bigint)) * 3500).toLocaleString(undefined, { maximumFractionDigits: 2 })}` : 
+      "$0.00",
+    icon: <Shield className="h-10 w-10 text-primary" />,
+    description: "Earn yield on ETH with minimal risk exposure",
+    vaultAddress: vaultAddress,
+    tokenAddress: tokenAddress
+  };
+
+  // Check if user has any active CDPs
+  const hasActiveCdps = () => {
+    // Check if user has borrowed CDP tokens
+    const hasBorrowed = cdpBorrowed && Number(formatEther(cdpBorrowed as bigint)) > 0;
+    
+    // Check if user has deposited collateral
+    const hasCollateral = 
+      (wethCollateral.data && Number(formatEther(wethCollateral.data as bigint)) > 0) || 
+      (usdcCollateral.data && Number(formatEther(usdcCollateral.data as bigint)) > 0);
+    
+    return hasBorrowed || hasCollateral;
+  };
+
+  // User CDPs based on contract data
+  const userCdps = isConnected && hasActiveCdps() ? [
     {
-      id: "1294",
+      id: "1",
       type: "ETH-A",
-      collateralValue: "$12,500.00",
-      cdpValue: "$8,750.00",
-      liquidationRisk: "25%",
-      collateralRatio: "175%",
+      collateralValue: calculateCollateralValue(),
+      cdpValue: calculateCdpValue(),
+      liquidationRisk: calculateLiquidationRisk(),
+      collateralRatio: calculateCollateralRatio(),
       icon: <Shield className="h-4 w-4 text-primary" />,
       asset: "Ethereum"
-    },
-    {
-      id: "876",
-      type: "BTC-B",
-      collateralValue: "$33,172.39",
-      cdpValue: "$19,903.43",
-      liquidationRisk: "42%",
-      collateralRatio: "167%",
-      icon: <Lock className="h-4 w-4 text-primary" />,
-      asset: "Bitcoin"
     }
-  ];
+  ] : [];
 
   // Contract interaction handlers
   const handleDeposit = async (asset: string, amount: string) => {
@@ -184,9 +258,22 @@ export default function VaultsPage() {
         </div>
       )}
 
+      {isConnected && (
+        <div className="mb-6 flex justify-between items-center">
+          <div className="flex-1">
+            {isLoadingData && (
+              <div className="p-4 border border-blue-500 bg-blue-500/10 rounded-lg flex items-center gap-3">
+                <Loader2 className="h-5 w-5 text-blue-500 animate-spin" />
+                <p className="text-sm">Loading your vault data...</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="mb-6">
         <div className="flex justify-between items-center mb-4">
-          <p className="stats-label">AVAILABLE CDP TYPES</p>
+          <p className="stats-label">AVAILABLE CDP TYPE</p>
           <Button 
             onClick={() => setDepositModalOpen(true)}
             disabled={!isConnected || loading || isPending}
@@ -194,65 +281,68 @@ export default function VaultsPage() {
             Deposit Collateral
           </Button>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {vaultProducts.map((vault, index) => (
-            <div className="dashboard-card" key={index}>
-              <div className="flex items-start gap-4">
-                <div className="p-3 bg-secondary rounded-lg">
-                  {vault.icon}
+        <div className="dashboard-card">
+          <div className="flex items-start gap-4">
+            <div className="p-3 bg-secondary rounded-lg">
+              {vaultProduct.icon}
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-lg mb-1">{vaultProduct.name}</h3>
+              <p className="text-muted-foreground text-sm mb-3">{vaultProduct.description}</p>
+              <div className="grid grid-cols-2 gap-y-2">
+                <div>
+                  <p className="text-xs text-muted-foreground">STABILITY FEE</p>
+                  <p className="font-semibold text-primary">{vaultProduct.apy}</p>
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-lg mb-1">{vault.name}</h3>
-                  <p className="text-muted-foreground text-sm mb-3">Create a collateralized debt position with {vault.name}</p>
-                  <div className="grid grid-cols-2 gap-y-2">
-                    <div>
-                      <p className="text-xs text-muted-foreground">STABILITY FEE</p>
-                      <p className="font-semibold text-primary">{vault.apy}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">LIQUIDATION FEE</p>
-                      <p className="font-medium">13%</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">MIN COLLATERAL RATIO</p>
-                      <p className="font-medium">150%</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">MAX DEBT</p>
-                      <p className="font-medium">{vault.minDeposit}</p>
-                    </div>
-                  </div>
-                  <div className="mt-4 flex justify-between items-center">
-                    <div>
-                      <p className="text-xs text-muted-foreground">TOTAL DEBT ISSUED</p>
-                      <p className="font-medium">{vault.totalLocked}</p>
-                    </div>
-                    <Button 
-                      onClick={() => setBorrowModalOpen(true)}
-                      disabled={!isConnected || loading || isPending}
-                    >
-                      Create CDP
-                    </Button>
-                  </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">LIQUIDATION FEE</p>
+                  <p className="font-medium">13%</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">MIN COLLATERAL RATIO</p>
+                  <p className="font-medium">150%</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">MAX DEBT</p>
+                  <p className="font-medium">{vaultProduct.minDeposit}</p>
                 </div>
               </div>
+              <div className="mt-4 flex justify-between items-center">
+                <div>
+                  <p className="text-xs text-muted-foreground">TOTAL LOCKED</p>
+                  <p className="font-medium">{vaultProduct.totalLocked}</p>
+                </div>
+                <Button 
+                  onClick={() => setBorrowModalOpen(true)}
+                  disabled={!isConnected || loading || isPending}
+                >
+                  Create CDP
+                </Button>
+              </div>
             </div>
-          ))}
+          </div>
         </div>
       </div>
 
       <div className="dashboard-card">
         <div className="flex justify-between items-center mb-4">
-          <p className="stats-label">YOUR ACTIVE CDPs</p>
-          <Button 
-            variant="outline" 
-            onClick={() => setLiquidateModalOpen(true)}
-            disabled={!isConnected || loading || isPending}
-          >
-            Liquidate Position
-          </Button>
+          <p className="stats-label">
+            {isConnected ? 
+              userCdps.length > 0 ? "YOUR ACTIVE CDPs" : "NO ACTIVE CDPs" 
+              : "CONNECT WALLET TO VIEW CDPs"
+            }
+          </p>
+          {isConnected && (
+            <Button 
+              variant="outline" 
+              onClick={() => setLiquidateModalOpen(true)}
+              disabled={loading || isPending}
+            >
+              Liquidate Position
+            </Button>
+          )}
         </div>
-        {userCdps.length > 0 ? (
+        {isConnected && userCdps.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -340,15 +430,34 @@ export default function VaultsPage() {
             </table>
           </div>
         ) : (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">You don&apos;t have any active CDPs yet.</p>
-            <Button 
-              className="mt-4" 
-              onClick={() => setDepositModalOpen(true)}
-              disabled={!isConnected || loading || isPending}
-            >
-              Create Your First CDP
-            </Button>
+          <div className="text-center py-12">
+            {isConnected ? (
+              <>
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-secondary mb-4">
+                  <Shield className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-lg font-medium mb-2">No Active CDPs Found</h3>
+                <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                  You don&apos;t have any active CDPs yet. Start by depositing collateral and creating your first CDP.
+                </p>
+                <Button 
+                  onClick={() => setDepositModalOpen(true)}
+                  disabled={loading || isPending}
+                >
+                  Create Your First CDP
+                </Button>
+              </>
+            ) : (
+              <>
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-secondary mb-4">
+                  <AlertTriangle className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-lg font-medium mb-2">Wallet Not Connected</h3>
+                <p className="text-muted-foreground">
+                  Connect your wallet to view and manage your CDPs.
+                </p>
+              </>
+            )}
           </div>
         )}
       </div>
@@ -372,7 +481,7 @@ export default function VaultsPage() {
         isOpen={repayModalOpen}
         onClose={() => setRepayModalOpen(false)}
         onRepay={handleRepay}
-        currentDebt={selectedCdp === "1294" ? "8750" : "19903.43"}
+        currentDebt={cdpBorrowed ? formatEther(cdpBorrowed as bigint) : "0"}
       />
 
       <WithdrawModal 
